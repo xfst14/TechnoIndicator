@@ -92,7 +92,3 @@ Special thanks to the open-source community for Tailwind CSS and Chart.js.
 
 These are **illustrative forecasts** based on historical trends and publicly known drivers.  
 **Not financial advice.** Real energy markets are influenced by many unpredictable factors.
-
----
-
-*Last updated: September 10, 2026*
