@@ -2,6 +2,8 @@
 
 **Real-time 10-year forecasts for global oil & electricity prices.**
 
+<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/2a4fb37c-0cb4-448a-b1f7-d4c19c833f0b" />
+
 A modern, clean, professional single-page web application that delivers illustrative energy price forecasts with interactive data visualization, scenario analysis, and dynamic factor insights.
 
 **Live demo:** [https://technoindicator.vercel.app/](https://technoindicator.vercel.app/)
