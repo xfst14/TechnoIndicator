@@ -1,0 +1,307 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #04070d;
+  --color-ink-900: #060a13;
+  --color-ink-850: #090f1c;
+  --color-ink-800: #0d1526;
+  --color-ink-700: #16223c;
+  --color-ink-600: #1f2f52;
+  --color-line: rgba(148, 163, 184, 0.12);
+  --color-line-strong: rgba(148, 163, 184, 0.22);
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, sans-serif;
+  --color-oil: #f5b840;
+  --color-elec: #2dd4bf;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #060a13;
+  color: #dbe4f0;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(45, 212, 191, 0.28);
+  color: #f0fdfa;
+}
+
+.balance {
+  text-wrap: balance;
+}
+
+/* ---------- background helpers ---------- */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.mask-fade-y {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 14%, black 80%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 14%, black 80%, transparent);
+}
+
+.glow-teal {
+  background: radial-gradient(closest-side, rgba(45, 212, 191, 0.14), transparent);
+}
+
+.glow-amber {
+  background: radial-gradient(closest-side, rgba(245, 184, 64, 0.12), transparent);
+}
+
+/* ---------- reveal on scroll ---------- */
+.reveal {
+  opacity: 0;
+}
+
+.reveal.in-view {
+  animation: reveal-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- live pulse ---------- */
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.75);
+  }
+}
+
+.ping-ring {
+  animation: ping-ring 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  80%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* ---------- marquee ---------- */
+.marquee-track {
+  animation: marquee 42s linear infinite;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- hero chart line draw ---------- */
+.draw-line {
+  stroke-dasharray: 1400;
+  stroke-dashoffset: 1400;
+}
+
+.in-view .draw-line {
+  animation: dash-draw 2.6s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards;
+}
+
+@keyframes dash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.float-y {
+  animation: float-y 7s ease-in-out infinite;
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ---------- export pulse (triggered from navbar) ---------- */
+.export-pulse {
+  animation: export-pulse 0.9s ease-out 2;
+}
+
+@keyframes export-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 20px rgba(45, 212, 191, 0);
+  }
+}
+
+/* ---------- refresh spin ---------- */
+.spin-once {
+  animation: spin-once 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes spin-once {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #060a13;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 8px;
+  border: 2px solid #060a13;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* ---------- range slider ---------- */
+input[type="range"].slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 24px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"].slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #2dd4bf 0%,
+    #2dd4bf var(--fill, 50%),
+    #1e293b var(--fill, 50%),
+    #1e293b 100%
+  );
+}
+
+input[type="range"].slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: #0b1220;
+  border: 3px solid #2dd4bf;
+  box-shadow: 0 0 0 5px rgba(45, 212, 191, 0.14), 0 4px 14px rgba(0, 0, 0, 0.5);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+input[type="range"].slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 8px rgba(45, 212, 191, 0.18), 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+input[type="range"].slider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #1e293b;
+}
+
+input[type="range"].slider::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: #2dd4bf;
+}
+
+input[type="range"].slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0b1220;
+  border: 3px solid #2dd4bf;
+  box-shadow: 0 0 0 5px rgba(45, 212, 191, 0.14);
+}
+
+input[type="range"].slider:focus-visible {
+  outline: 2px solid rgba(45, 212, 191, 0.6);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+
+/* ---------- focus visibility ---------- */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid rgba(45, 212, 191, 0.65);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    opacity: 1;
+    animation: none !important;
+  }
+  .reveal.in-view {
+    animation: none;
+  }
+  .marquee-track,
+  .float-y,
+  .draw-line,
+  .pulse-dot,
+  .ping-ring,
+  .export-pulse,
+  .spin-once {
+    animation: none !important;
+  }
+}
