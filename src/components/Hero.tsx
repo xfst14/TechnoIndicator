@@ -9,7 +9,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { Reveal } from "./Reveal";
-import { COMMODITIES, fmtDate, fmtMoney, MAX_HORIZON, START_YEAR } from "../lib/forecast";
+import { COMMODITIES, fmtDate, fmtMoney, MAX_HORIZON } from "../lib/forecast";
 
 const MARQUEE_ITEMS = [
   "OPEC+ Policy",
@@ -28,7 +28,10 @@ function useLiveTick(intervalMs = 5000) {
   const [tick, setTick] = useState({ oil: 0, elec: 0 });
   useEffect(() => {
     const id = setInterval(() => {
-      setTick({ oil: (Math.random() * 2 - 1) * 0.004, elec: (Math.random() * 2 - 1) * 0.004 });
+      setTick({
+        oil: (Math.random() * 2 - 1) * 0.004,
+        elec: (Math.random() * 2 - 1) * 0.004,
+      });
     }, intervalMs);
     return () => clearInterval(id);
   }, [intervalMs]);
@@ -66,7 +69,11 @@ function MiniStat({
                   delta >= 0 ? "text-emerald-400" : "text-rose-400"
                 }`}
               >
-                {delta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                {delta >= 0 ? (
+                  <TrendingUp className="h-3 w-3" />
+                ) : (
+                  <TrendingDown className="h-3 w-3" />
+                )}
                 {`${delta >= 0 ? "+" : ""}${(delta * 100).toFixed(1)}%`}
               </span>
             )}
@@ -107,7 +114,12 @@ function TerminalCard() {
 
           {/* chart */}
           <div className="px-2 pt-4">
-            <svg viewBox="0 0 560 300" className="w-full" role="img" aria-label="Illustrative 10-year forecast lines for oil and electricity">
+            <svg
+              viewBox="0 0 560 300"
+              className="w-full"
+              role="img"
+              aria-label="Illustrative 10-year forecast lines for oil and electricity"
+            >
               <defs>
                 <linearGradient id="hero-oil" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#f5b840" stopOpacity="0.22" />
@@ -120,7 +132,15 @@ function TerminalCard() {
               </defs>
 
               {[60, 120, 180, 240].map((y) => (
-                <line key={y} x1="0" y1={y} x2="560" y2={y} stroke="rgba(148,163,184,0.09)" strokeWidth="1" />
+                <line
+                  key={y}
+                  x1="0"
+                  y1={y}
+                  x2="560"
+                  y2={y}
+                  stroke="rgba(148,163,184,0.09)"
+                  strokeWidth="1"
+                />
               ))}
 
               <path
@@ -149,45 +169,29 @@ function TerminalCard() {
                 className="draw-line"
               />
 
-              <circle cx="560" cy="108" r="5" fill="#f5b840" />
-              <circle cx="560" cy="62" r="5" fill="#2dd4bf" />
-
-              <text x="4" y="292" fill="#5b6b87" fontSize="11" fontFamily="Inter, sans-serif">
-                {START_YEAR}
-              </text>
-              <text x="528" y="292" fill="#5b6b87" fontSize="11" fontFamily="Inter, sans-serif">
-                {START_YEAR + MAX_HORIZON}
-              </text>
+              <circle cx="560" cy="108" r="4.5" fill="#f5b840" />
+              <circle cx="560" cy="62" r="4.5" fill="#2dd4bf" />
             </svg>
           </div>
 
-          {/* kpis */}
-          <div className="grid grid-cols-2 divide-x divide-line border-t border-line">
-            <div className="px-5 py-4">
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-slate-500">
-                <Droplets className="h-3.5 w-3.5 text-oil" /> Brent Crude
-              </p>
-              <p className="mt-1 font-display text-2xl font-semibold text-white tabular-nums">
-                {fmtMoney(COMMODITIES[0].basePrice, 1)}
-                <span className="ml-1.5 text-xs font-medium text-slate-500">/bbl</span>
-              </p>
+          {/* legend */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-3.5">
+            <div className="flex items-center gap-5">
+              <span className="inline-flex items-center gap-2 text-xs text-slate-400">
+                <span className="h-2 w-2 rounded-full bg-oil" />
+                Brent crude
+              </span>
+              <span className="inline-flex items-center gap-2 text-xs text-slate-400">
+                <span className="h-2 w-2 rounded-full bg-elec" />
+                Global electricity
+              </span>
             </div>
-            <div className="px-5 py-4">
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-slate-500">
-                <Zap className="h-3.5 w-3.5 text-elec" /> Global Electricity
-              </p>
-              <p className="mt-1 font-display text-2xl font-semibold text-white tabular-nums">
-                {fmtMoney(COMMODITIES[1].basePrice, 0)}
-                <span className="ml-1.5 text-xs font-medium text-slate-500">/MWh</span>
-              </p>
-            </div>
+            <span className="text-[11px] font-medium uppercase tracking-widest text-slate-600">
+              10-year illustrative path
+            </span>
           </div>
         </div>
       </Reveal>
-
-      <div className="absolute -right-3 -top-4 rounded-full border border-teal-400/30 bg-ink-900/90 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-teal-300 shadow-lg backdrop-blur-sm">
-        {MAX_HORIZON}-yr horizon
-      </div>
     </div>
   );
 }
@@ -199,17 +203,16 @@ export function Hero() {
 
   return (
     <section className="relative overflow-hidden pt-32 pb-16 sm:pt-40 sm:pb-20">
-      {/* backdrop */}
-      <div className="pointer-events-none absolute inset-0 bg-grid mask-fade-y" />
-      <div className="pointer-events-none absolute -top-40 left-1/4 h-[480px] w-[480px] glow-teal" />
-      <div className="pointer-events-none absolute -right-32 top-40 h-[420px] w-[420px] glow-amber" />
+      <div className="pointer-events-none absolute inset-0 bg-grid mask-fade-y opacity-60" />
+      <div className="pointer-events-none absolute -left-24 top-20 h-[420px] w-[420px] glow-teal" />
+      <div className="pointer-events-none absolute -right-16 top-40 h-[360px] w-[360px] glow-amber" />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* copy */}
           <div>
             <Reveal>
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-line bg-ink-800/70 py-1.5 pl-2.5 pr-4 backdrop-blur-sm">
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-line bg-ink-800/50 px-3.5 py-1.5">
                 <span className="relative flex h-2 w-2">
                   <span className="ping-ring absolute h-full w-full rounded-full bg-teal-400" />
                   <span className="relative h-2 w-2 rounded-full bg-teal-400" />
@@ -222,21 +225,24 @@ export function Hero() {
 
             <Reveal delay={90}>
               <h1 className="balance mt-6 font-display text-5xl font-bold leading-[1.02] tracking-tight text-white sm:text-6xl lg:text-7xl">
-                Tecno<span className="bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent">Indicator</span>
+                Tecno
+                <span className="bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent">
+                  Indicator
+                </span>
               </h1>
             </Reveal>
 
             <Reveal delay={170}>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-400 sm:text-xl">
                 Real-time 10-year forecasts for global{" "}
-                <span className="font-semibold text-slate-200">oil</span> &amp;{" "}
+                <span className="font-semibold text-slate-200">oil</span> &{" "}
                 <span className="font-semibold text-slate-200">electricity</span> prices — with
                 scenario bands, driver intelligence and exportable data.
               </p>
             </Reveal>
 
             <Reveal delay={240}>
-              <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+              <div className="mt-6 flex flex-wrap gap-2.5 text-sm text-slate-400">
                 <span className="inline-flex items-center gap-2 rounded-lg border border-line bg-ink-800/60 px-3 py-2">
                   <CalendarDays className="h-4 w-4 text-teal-300" />
                   <span className="tabular-nums">{fmtDate(new Date())}</span>
@@ -250,23 +256,19 @@ export function Hero() {
 
             <Reveal delay={310}>
               <div className="mt-8 flex flex-wrap gap-3">
-                <button
-                  onClick={() =>
-                    document.getElementById("forecast")?.scrollIntoView({ behavior: "smooth" })
-                  }
-                  className="group inline-flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-teal-400 to-cyan-400 px-6 py-3.5 text-sm font-semibold text-ink-950 shadow-[0_8px_32px_rgba(45,212,191,0.35)] transition-all duration-300 hover:shadow-[0_8px_44px_rgba(45,212,191,0.55)] hover:brightness-110 active:scale-[0.98]"
+                <a
+                  href="#forecast"
+                  className="inline-flex items-center gap-2 rounded-xl bg-teal-400 px-5 py-3 text-sm font-semibold text-ink-950 shadow-[0_0_28px_rgba(45,212,191,0.35)] transition-all duration-200 hover:bg-teal-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.5)]"
                 >
-                  Start Forecast
-                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </button>
-                <button
-                  onClick={() =>
-                    document.getElementById("factors")?.scrollIntoView({ behavior: "smooth" })
-                  }
-                  className="inline-flex items-center gap-2.5 rounded-xl border border-line-strong bg-ink-800/70 px-6 py-3.5 text-sm font-semibold text-slate-200 backdrop-blur-sm transition-all duration-300 hover:border-teal-400/40 hover:bg-ink-800 hover:text-white active:scale-[0.98]"
+                  Open forecast studio
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href="#factors"
+                  className="inline-flex items-center gap-2 rounded-xl border border-line bg-ink-800/60 px-5 py-3 text-sm font-semibold text-slate-200 transition-colors duration-200 hover:border-teal-400/40 hover:text-white"
                 >
-                  Explore key drivers
-                </button>
+                  Explore drivers
+                </a>
               </div>
             </Reveal>
 
@@ -300,9 +302,12 @@ export function Hero() {
 
       {/* marquee */}
       <div className="marquee relative mt-16 overflow-hidden border-y border-line bg-ink-850/60 py-3.5 sm:mt-20">
-        <div className="marquee-track flex w-max items-center gap-8 whitespace-nowrap">
+        <div className="marquee-track flex w-max gap-8">
           {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
-            <span key={i} className="flex items-center gap-8 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            <span
+              key={i}
+              className="flex items-center gap-8 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500"
+            >
               {item}
               <span className="h-1 w-1 rounded-full bg-teal-400/60" />
             </span>

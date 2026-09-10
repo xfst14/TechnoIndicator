@@ -46,6 +46,13 @@ const SOURCES = [
   "NOAA / Copernicus (climate)",
 ];
 
+const LIMITATIONS = [
+  "Illustrative, not predictive — the model smooths shocks and cannot forecast black-swan events.",
+  "Spot levels and CAGRs are approximate research figures, not live exchange ticks.",
+  "Driver weights are qualitative judgements informed by public sources, not fitted regressions.",
+  "Currency, weather and policy shocks can overwhelm the baseline path in any given year.",
+];
+
 export function AboutSection() {
   return (
     <section id="about" className="relative scroll-mt-24 py-20 sm:py-28">
@@ -117,27 +124,13 @@ export function AboutSection() {
                 Honest limitations
               </h3>
               <ul className="mt-4 space-y-3 text-[13.5px] leading-relaxed text-slate-400">
-                {[
-                  "Illustrative, not predictive — the model smooths history and known drivers; it cannot anticipate tail events like wars or embargoes.",
-                  "Factor weights are research-informed estimates, not fitted econometric coefficients.",
-                  "Electricity is a global average; regional prices differ by 20× or more.",
-                  "This page is an educational analytics product. Nothing here is financial advice.",
-                ].map((t) => (
-                  <li key={t.slice(0, 24)} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400/70" />
-                    {t}
+                {LIMITATIONS.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5">
+                    <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-slate-600" />
+                    <span>{item}</span>
                   </li>
                 ))}
               </ul>
-              <div className="mt-auto pt-6">
-                <button
-                  onClick={() => document.getElementById("forecast")?.scrollIntoView({ behavior: "smooth" })}
-                  className="group inline-flex items-center gap-2 rounded-xl border border-teal-400/30 bg-teal-400/10 px-5 py-3 text-sm font-semibold text-teal-200 transition-all duration-200 hover:bg-teal-400/20 active:scale-[0.98]"
-                >
-                  Run a scenario now
-                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </button>
-              </div>
             </div>
           </Reveal>
         </div>

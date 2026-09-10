@@ -32,9 +32,21 @@ const CATEGORY_ICONS: Record<Factor["category"], LucideIcon> = {
 };
 
 const DIR_META: Record<Direction, { icon: LucideIcon; label: string; cls: string }> = {
-  up: { icon: TrendingUp, label: "Upward price pressure", cls: "text-rose-300 bg-rose-400/10 border-rose-400/20" },
-  down: { icon: TrendingDown, label: "Downward price pressure", cls: "text-emerald-300 bg-emerald-400/10 border-emerald-400/20" },
-  both: { icon: ArrowUpDown, label: "Works both ways", cls: "text-slate-300 bg-slate-400/10 border-slate-400/20" },
+  up: {
+    icon: TrendingUp,
+    label: "Upward price pressure",
+    cls: "text-rose-300 bg-rose-400/10 border-rose-400/20",
+  },
+  down: {
+    icon: TrendingDown,
+    label: "Downward price pressure",
+    cls: "text-emerald-300 bg-emerald-400/10 border-emerald-400/20",
+  },
+  both: {
+    icon: ArrowUpDown,
+    label: "Works both ways",
+    cls: "text-slate-300 bg-slate-400/10 border-slate-400/20",
+  },
 };
 
 const MAG_CLS: Record<string, string> = {
@@ -49,7 +61,15 @@ const TREND_META = {
   stable: { icon: Minus, label: "Steady across horizons", cls: "text-slate-400" },
 } as const;
 
-function FactorCard({ factor, horizon, index }: { factor: Factor; horizon: number; index: number }) {
+function FactorCard({
+  factor,
+  horizon,
+  index,
+}: {
+  factor: Factor;
+  horizon: number;
+  index: number;
+}) {
   const rel = relevanceForHorizon(factor, horizon);
   const pct = Math.round(rel * 100);
   const dominant = rel >= 0.75;
@@ -90,7 +110,9 @@ function FactorCard({ factor, horizon, index }: { factor: Factor; horizon: numbe
               </p>
             </div>
           </div>
-          <span className={`shrink-0 rounded-md border px-2 py-1 text-[10px] font-bold uppercase tracking-widest ${MAG_CLS[mag]}`}>
+          <span
+            className={`shrink-0 rounded-md border px-2 py-1 text-[10px] font-bold uppercase tracking-widest ${MAG_CLS[mag]}`}
+          >
             {mag}
           </span>
         </div>
@@ -100,11 +122,15 @@ function FactorCard({ factor, horizon, index }: { factor: Factor; horizon: numbe
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${Dir.cls}`}>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${Dir.cls}`}
+          >
             <DirIcon className="h-3.5 w-3.5" />
             {Dir.label}
           </span>
-          <span className={`inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-[11px] font-medium ${Trend.cls}`}>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-[11px] font-medium ${Trend.cls}`}
+          >
             <TrendIcon className="h-3.5 w-3.5" />
             {Trend.label}
           </span>
@@ -142,7 +168,10 @@ export function FactorsSection({ horizon }: { horizon: number }) {
   const dominant = FACTORS.filter((f) => relevanceForHorizon(f, horizon) >= 0.75).length;
 
   return (
-    <section id="factors" className="relative scroll-mt-24 border-t border-line bg-ink-850/40 py-20 sm:py-28">
+    <section
+      id="factors"
+      className="relative scroll-mt-24 border-t border-line bg-ink-850/40 py-20 sm:py-28"
+    >
       <div className="pointer-events-none absolute right-0 top-24 h-[380px] w-[380px] glow-amber" />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
@@ -186,7 +215,8 @@ export function FactorsSection({ horizon }: { horizon: number }) {
           <p className="mt-10 text-xs leading-relaxed text-slate-600">
             Driver research compiled from EIA, IEA, OPEC, IRENA, IMF, BloombergNEF and
             GlobalPetrolPrices public materials, {START_YEAR}. Magnitude reflects typical price
-            impact; relevance reflects how strongly a driver acts over the selected horizon.
+            impact; relevance reflects how strongly each driver shapes the path at the selected
+            horizon.
           </p>
         </Reveal>
       </div>
