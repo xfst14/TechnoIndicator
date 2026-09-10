@@ -394,7 +394,7 @@ export async function exportChartAsPng(
   clone.setAttribute("height", String(h * scale));
   const styleEl = document.createElementNS("http://www.w3.org/2000/svg", "style");
   styleEl.textContent =
-    'text{font-family:Inter,system-ui,sans-serif;} .recharts-text{font-family:Inter,system-ui,sans-serif;}';
+    "text{font-family:Inter,system-ui,sans-serif;} .recharts-text{font-family:Inter,system-ui,sans-serif;}";
   clone.insertBefore(styleEl, clone.firstChild);
 
   const serialized = new XMLSerializer().serializeToString(clone);
