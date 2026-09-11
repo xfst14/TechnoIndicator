@@ -6,7 +6,7 @@
 
 A modern, clean, professional single-page web application that delivers illustrative energy price forecasts with interactive data visualization, scenario analysis, and dynamic factor insights.
 
-**Live demo:** [https://technoindicator.vercel.app/](https://technoindicator.vercel.app/)
+**Live demo:** [https://tecnoindicator.vercel.app/](https://tecnoindicator.vercel.app/)
 
 ---
 
