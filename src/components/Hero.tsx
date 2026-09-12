@@ -1,318 +1,222 @@
-import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  CalendarDays,
-  TrendingDown,
-  TrendingUp,
-  Zap,
-  Droplets,
-  SlidersHorizontal,
-} from "lucide-react";
-import { Reveal } from "./Reveal";
-import { COMMODITIES, fmtDate, fmtMoney, MAX_HORIZON } from "../lib/forecast";
+import { ArrowRight, CalendarDays, ChevronDown, Droplets, Fuel, Radio, Zap } from "lucide-react";
+import Reveal from "./Reveal";
+import Ticker from "./Ticker";
+import { useFlash } from "../hook/useFlash";
+import { fmtFullDate, fmtUsd, type CommodityId } from "../lib/model";
 
-const MARQUEE_ITEMS = [
-  "OPEC+ Policy",
-  "Geopolitics",
-  "Renewables & Storage",
-  "China & India Demand",
-  "Gas & Coal Costs",
-  "Weather Extremes",
-  "Recession Risk",
-  "Carbon Policy",
-  "Transport Electrification",
-  "US Dollar Cycle",
+/* Deterministic decorative sparkline path */
+function sparkPath(seed: number, width = 560, height = 180): string {
+  let y = height * 0.62;
+  let d = `M 0 ${y.toFixed(1)}`;
+  let drift = 0;
+  for (let i = 1; i <= 48; i++) {
+    drift += 0.55;
+    const x = (i / 48) * width;
+    y += Math.sin(i * 0.85 + seed) * 9 + Math.sin(i * 0.31 + seed * 2.3) * 6 - 1.4;
+    y = Math.max(24, Math.min(height - 20, y));
+    d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  return d;
+}
+
+interface HeroProps {
+  prices: Record<CommodityId, number>;
+}
+
+/** Price readout that flashes green/red as the live feed moves. */
+function LivePrice({ value, decimals }: { value: number; decimals: number }) {
+  const flash = useFlash(value);
+  return (
+    <p className={`font-display text-lg font-bold tabular-nums text-white ${flash}`}>
+      {fmtUsd(value, decimals)}
+    </p>
+  );
+}
+
+const STATS = [
+  { value: "3", label: "Commodities" },
+  { value: "10", label: "Year horizon" },
+  { value: "12", label: "Key drivers" },
+  { value: "3", label: "Scenarios each" },
 ];
 
-function useLiveTick(intervalMs = 5000) {
-  const [tick, setTick] = useState({ oil: 0, elec: 0 });
-  useEffect(() => {
-    const id = setInterval(() => {
-      setTick({
-        oil: (Math.random() * 2 - 1) * 0.004,
-        elec: (Math.random() * 2 - 1) * 0.004,
-      });
-    }, intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-  return tick;
-}
+export default function Hero({ prices }: HeroProps) {
+  const today = new Date();
 
-function MiniStat({
-  icon,
-  label,
-  value,
-  delta,
-  delay,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  delta?: number;
-  delay: number;
-}) {
-  return (
-    <Reveal delay={delay} className="min-w-0">
-      <div className="flex items-center gap-3 rounded-xl border border-line bg-ink-800/60 px-4 py-3 backdrop-blur-sm transition-colors duration-300 hover:border-line-strong">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 text-teal-300">
-          {icon}
-        </span>
-        <div className="min-w-0">
-          <p className="truncate text-[11px] font-medium uppercase tracking-widest text-slate-500">
-            {label}
-          </p>
-          <p className="flex items-baseline gap-2 font-display text-lg font-semibold text-white">
-            <span className="tabular-nums">{value}</span>
-            {delta !== undefined && (
-              <span
-                className={`inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums ${
-                  delta >= 0 ? "text-emerald-400" : "text-rose-400"
-                }`}
-              >
-                {delta >= 0 ? (
-                  <TrendingUp className="h-3 w-3" />
-                ) : (
-                  <TrendingDown className="h-3 w-3" />
-                )}
-                {`${delta >= 0 ? "+" : ""}${(delta * 100).toFixed(1)}%`}
-              </span>
-            )}
-          </p>
-        </div>
-      </div>
-    </Reveal>
-  );
-}
-
-function TerminalCard() {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  const commodityRows: Array<{
+    id: CommodityId;
+    name: string;
+    unit: string;
+    icon: typeof Fuel;
+    color: string;
+    decimals: number;
+  }> = [
+    { id: "oil", name: "Brent Crude", unit: "USD/bbl", icon: Fuel, color: "#f5b840", decimals: 2 },
+    { id: "electricity", name: "Electricity", unit: "USD/MWh", icon: Zap, color: "#2dd4bf", decimals: 1 },
+    { id: "water", name: "Water", unit: "USD/m³", icon: Droplets, color: "#38bdf8", decimals: 2 },
+  ];
 
   return (
-    <div className="relative">
-      <div className="absolute -inset-6 rounded-[28px] bg-gradient-to-br from-teal-500/10 via-transparent to-amber-500/10 blur-2xl" />
-      <Reveal delay={250}>
-        <div className="float-y relative overflow-hidden rounded-2xl border border-line bg-ink-850/90 shadow-[0_32px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl">
-          {/* header */}
-          <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
-            <div className="flex items-center gap-2.5">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="ping-ring absolute inline-flex h-full w-full rounded-full bg-teal-400" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-teal-400" />
-              </span>
-              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Forecast Terminal
-              </span>
-            </div>
-            <span className="font-mono text-[11px] tabular-nums text-slate-500">
-              {now.toLocaleTimeString("en-US", { hour12: false })} UTC
-            </span>
-          </div>
+    <section id="top" className="relative overflow-hidden pt-16">
+      {/* backdrop */}
+      <div className="pointer-events-none absolute inset-0 bg-grid mask-fade-y opacity-70" aria-hidden="true" />
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-[480px] w-[720px] -translate-x-1/2 glow-teal blur-3xl opacity-70" aria-hidden="true" />
+      <div className="pointer-events-none absolute right-[-160px] top-40 h-[380px] w-[380px] glow-amber blur-3xl opacity-60" aria-hidden="true" />
 
-          {/* chart */}
-          <div className="px-2 pt-4">
-            <svg
-              viewBox="0 0 560 300"
-              className="w-full"
-              role="img"
-              aria-label="Illustrative 10-year forecast lines for oil and electricity"
-            >
-              <defs>
-                <linearGradient id="hero-oil" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f5b840" stopOpacity="0.22" />
-                  <stop offset="100%" stopColor="#f5b840" stopOpacity="0" />
-                </linearGradient>
-                <linearGradient id="hero-elec" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.22" />
-                  <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-
-              {[60, 120, 180, 240].map((y) => (
-                <line
-                  key={y}
-                  x1="0"
-                  y1={y}
-                  x2="560"
-                  y2={y}
-                  stroke="rgba(148,163,184,0.09)"
-                  strokeWidth="1"
-                />
-              ))}
-
-              <path
-                d="M0,218 C50,212 80,226 130,206 S230,178 300,184 S430,140 560,108 L560,300 L0,300 Z"
-                fill="url(#hero-oil)"
-              />
-              <path
-                d="M0,168 C60,160 110,150 170,154 S300,118 390,120 S500,82 560,62 L560,300 L0,300 Z"
-                fill="url(#hero-elec)"
-              />
-
-              <path
-                d="M0,218 C50,212 80,226 130,206 S230,178 300,184 S430,140 560,108"
-                fill="none"
-                stroke="#f5b840"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                className="draw-line"
-              />
-              <path
-                d="M0,168 C60,160 110,150 170,154 S300,118 390,120 S500,82 560,62"
-                fill="none"
-                stroke="#2dd4bf"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                className="draw-line"
-              />
-
-              <circle cx="560" cy="108" r="4.5" fill="#f5b840" />
-              <circle cx="560" cy="62" r="4.5" fill="#2dd4bf" />
-            </svg>
-          </div>
-
-          {/* legend */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-3.5">
-            <div className="flex items-center gap-5">
-              <span className="inline-flex items-center gap-2 text-xs text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-oil" />
-                Brent crude
-              </span>
-              <span className="inline-flex items-center gap-2 text-xs text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-elec" />
-                Global electricity
-              </span>
-            </div>
-            <span className="text-[11px] font-medium uppercase tracking-widest text-slate-600">
-              10-year illustrative path
-            </span>
-          </div>
-        </div>
-      </Reveal>
-    </div>
-  );
-}
-
-export function Hero() {
-  const tick = useLiveTick();
-  const oil = COMMODITIES[0];
-  const elec = COMMODITIES[1];
-
-  return (
-    <section className="relative overflow-hidden pt-32 pb-16 sm:pt-40 sm:pb-20">
-      <div className="pointer-events-none absolute inset-0 bg-grid mask-fade-y opacity-60" />
-      <div className="pointer-events-none absolute -left-24 top-20 h-[420px] w-[420px] glow-teal" />
-      <div className="pointer-events-none absolute -right-16 top-40 h-[360px] w-[360px] glow-amber" />
-
-      <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* copy */}
+      <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-20 sm:px-8 sm:pt-28">
+        <div className="grid items-center gap-14 lg:grid-cols-[1.15fr_1fr] lg:gap-10">
+          {/* Copy */}
           <div>
             <Reveal>
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-line bg-ink-800/50 px-3.5 py-1.5">
+              <span className="inline-flex items-center gap-2.5 rounded-full border border-teal-400/25 bg-teal-400/[0.07] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-teal-200">
                 <span className="relative flex h-2 w-2">
-                  <span className="ping-ring absolute h-full w-full rounded-full bg-teal-400" />
-                  <span className="relative h-2 w-2 rounded-full bg-teal-400" />
+                  <span className="ping-ring absolute inline-flex h-full w-full rounded-full bg-teal-400" aria-hidden="true" />
+                  <span className="pulse-dot relative inline-flex h-2 w-2 rounded-full bg-teal-300" aria-hidden="true" />
                 </span>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
-                  Live · Global energy markets
-                </span>
-              </div>
+                Live · Global commodity intelligence
+              </span>
             </Reveal>
 
             <Reveal delay={90}>
-              <h1 className="balance mt-6 font-display text-5xl font-bold leading-[1.02] tracking-tight text-white sm:text-6xl lg:text-7xl">
+              <h1 className="mt-6 font-display text-5xl font-bold leading-[1.04] tracking-tight text-white sm:text-6xl lg:text-7xl">
                 Tecno
-                <span className="bg-gradient-to-r from-teal-300 to-cyan-300 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-teal-300 via-teal-400 to-cyan-300 bg-clip-text text-transparent">
                   Indicator
                 </span>
               </h1>
             </Reveal>
 
             <Reveal delay={170}>
-              <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-400 sm:text-xl">
+              <p className="mt-6 max-w-xl text-balance text-lg leading-relaxed text-slate-300/90 sm:text-xl">
                 Real-time 10-year forecasts for global{" "}
-                <span className="font-semibold text-slate-200">oil</span> &{" "}
-                <span className="font-semibold text-slate-200">electricity</span> prices — with
-                scenario bands, driver intelligence and exportable data.
+                <span className="font-semibold text-oil">oil</span>,{" "}
+                <span className="font-semibold text-elec">electricity</span> &{" "}
+                <span className="font-semibold text-water">water</span> prices — with scenario bands,
+                driver analysis and exportable analytics.
               </p>
             </Reveal>
 
             <Reveal delay={240}>
-              <div className="mt-6 flex flex-wrap gap-2.5 text-sm text-slate-400">
-                <span className="inline-flex items-center gap-2 rounded-lg border border-line bg-ink-800/60 px-3 py-2">
-                  <CalendarDays className="h-4 w-4 text-teal-300" />
-                  <span className="tabular-nums">{fmtDate(new Date())}</span>
+              <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-400">
+                <span className="inline-flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-teal-300" aria-hidden="true" />
+                  {fmtFullDate(today)}
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-lg border border-line bg-ink-800/60 px-3 py-2">
-                  <SlidersHorizontal className="h-4 w-4 text-teal-300" />
-                  Updated continuously
-                </span>
+                <span className="hidden h-1 w-1 rounded-full bg-slate-600 sm:inline-block" aria-hidden="true" />
+                <span>All figures in USD</span>
               </div>
             </Reveal>
 
             <Reveal delay={310}>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-9 flex flex-wrap items-center gap-4">
                 <a
                   href="#forecast"
-                  className="inline-flex items-center gap-2 rounded-xl bg-teal-400 px-5 py-3 text-sm font-semibold text-ink-950 shadow-[0_0_28px_rgba(45,212,191,0.35)] transition-all duration-200 hover:bg-teal-300 hover:shadow-[0_0_36px_rgba(45,212,191,0.5)]"
+                  className="group inline-flex items-center gap-2.5 rounded-xl bg-teal-400 px-7 py-3.5 font-display text-sm font-semibold text-slate-950 shadow-[0_0_32px_rgba(45,212,191,0.35)] transition-all duration-300 hover:bg-teal-300 hover:shadow-[0_0_44px_rgba(45,212,191,0.5)]"
                 >
-                  Open forecast studio
-                  <ArrowRight className="h-4 w-4" />
+                  Start Forecast
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
                 </a>
                 <a
                   href="#factors"
-                  className="inline-flex items-center gap-2 rounded-xl border border-line bg-ink-800/60 px-5 py-3 text-sm font-semibold text-slate-200 transition-colors duration-200 hover:border-teal-400/40 hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-xl border border-line-strong bg-white/[0.03] px-7 py-3.5 font-display text-sm font-semibold text-slate-200 transition-all duration-300 hover:border-teal-400/40 hover:text-teal-200"
                 >
-                  Explore drivers
+                  Explore Drivers
                 </a>
               </div>
             </Reveal>
 
-            <div className="mt-10 grid gap-3 sm:grid-cols-3">
-              <MiniStat
-                icon={<Droplets className="h-5 w-5 text-oil" />}
-                label="Brent crude"
-                value={`${fmtMoney(oil.basePrice * (1 + tick.oil), 1)}`}
-                delta={tick.oil}
-                delay={380}
-              />
-              <MiniStat
-                icon={<Zap className="h-5 w-5 text-elec" />}
-                label="Global electricity"
-                value={fmtMoney(elec.basePrice * (1 + tick.elec), 0)}
-                delta={tick.elec}
-                delay={450}
-              />
-              <MiniStat
-                icon={<SlidersHorizontal className="h-5 w-5" />}
-                label="Scenario horizon"
-                value={`${MAX_HORIZON} years`}
-                delay={520}
-              />
-            </div>
+            <Reveal delay={380}>
+              <dl className="mt-12 grid max-w-lg grid-cols-2 gap-x-6 gap-y-7 sm:grid-cols-4">
+                {STATS.map((s) => (
+                  <div key={s.label}>
+                    <dt className="font-display text-3xl font-bold tabular-nums text-white">{s.value}</dt>
+                    <dd className="mt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-slate-500">
+                      {s.label}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Reveal>
           </div>
 
-          <TerminalCard />
+          {/* Dashboard preview */}
+          <Reveal delay={260} className="relative">
+            <div className="pointer-events-none absolute -inset-10 glow-water blur-3xl opacity-50" aria-hidden="true" />
+            <div className="relative rounded-2xl border border-line bg-panel/85 p-6 shadow-[0_32px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-7">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Radio className="h-4 w-4 text-teal-300" aria-hidden="true" />
+                  <span className="font-display text-sm font-semibold text-white">Market snapshot</span>
+                </div>
+                <span className="flex items-center gap-1.5 rounded-full border border-teal-400/25 bg-teal-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-teal-300">
+                  <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-teal-300" aria-hidden="true" />
+                  Live
+                </span>
+              </div>
+
+              {/* sparkline */}
+              <div className="mt-5 overflow-hidden rounded-xl border border-line bg-base/60 p-4">
+                <svg viewBox="0 0 560 180" className="h-44 w-full" role="img" aria-label="Stylized price trajectory preview">
+                  <defs>
+                    <linearGradient id="heroSparkFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.28" />
+                      <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  {[36, 72, 108, 144].map((gy) => (
+                    <line key={gy} x1="0" y1={gy} x2="560" y2={gy} stroke="rgba(148,163,184,0.08)" strokeWidth="1" />
+                  ))}
+                  <path d={`${sparkPath(2.4)} L 560 180 L 0 180 Z`} fill="url(#heroSparkFill)" stroke="none" />
+                  <path d={sparkPath(2.4)} fill="none" stroke="#2dd4bf" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="draw-line" />
+                  <path d={sparkPath(5.9)} fill="none" stroke="#f5b840" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" className="draw-line" style={{ animationDelay: "0.8s" }} />
+                </svg>
+                <div className="mt-2 flex justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-slate-500">
+                  <span>{new Date().getFullYear()}</span>
+                  <span>10-year trajectory</span>
+                  <span>{new Date().getFullYear() + 10}</span>
+                </div>
+              </div>
+
+              {/* rows */}
+              <div className="mt-5 space-y-3">
+                {commodityRows.map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex items-center justify-between rounded-xl border border-line bg-white/[0.025] px-4 py-3 transition-colors duration-300 hover:border-line-strong"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border"
+                        style={{ backgroundColor: `${r.color}14`, borderColor: `${r.color}33`, color: r.color }}
+                      >
+                        <r.icon className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{r.name}</p>
+                        <p className="text-[11px] text-slate-500">{r.unit}</p>
+                      </div>
+                    </div>
+                    <LivePrice value={prices[r.id]} decimals={r.decimals} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* floating badge */}
+            <div className="float-y absolute -right-3 -top-5 rounded-xl border border-line bg-panel-2/95 px-4 py-3 shadow-2xl shadow-black/50 backdrop-blur-xl sm:-right-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Model runs</p>
+              <p className="font-display text-sm font-bold text-teal-300">100% in-browser</p>
+            </div>
+          </Reveal>
         </div>
       </div>
 
-      {/* marquee */}
-      <div className="marquee relative mt-16 overflow-hidden border-y border-line bg-ink-850/60 py-3.5 sm:mt-20">
-        <div className="marquee-track flex w-max gap-8">
-          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
-            <span
-              key={i}
-              className="flex items-center gap-8 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500"
-            >
-              {item}
-              <span className="h-1 w-1 rounded-full bg-teal-400/60" />
-            </span>
-          ))}
-        </div>
+      <Ticker prices={prices} />
+
+      <div className="relative flex justify-center pb-10 pt-8">
+        <a href="#forecast" aria-label="Scroll to forecast tool" className="text-slate-500 transition-colors hover:text-teal-300">
+          <ChevronDown className="h-6 w-6 animate-bounce" aria-hidden="true" />
+        </a>
       </div>
     </section>
   );
