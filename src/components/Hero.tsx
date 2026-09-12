@@ -1,6 +1,7 @@
 import { ArrowRight, CalendarDays, ChevronDown, Droplets, Fuel, Radio, Zap } from "lucide-react";
 import Reveal from "./Reveal";
 import Ticker from "./Ticker";
+import { useFlash } from "../hooks/useFlash";
 import { fmtFullDate, fmtUsd, type CommodityId } from "../lib/model";
 
 /* Deterministic decorative sparkline path */
@@ -20,6 +21,16 @@ function sparkPath(seed: number, width = 560, height = 180): string {
 
 interface HeroProps {
   prices: Record<CommodityId, number>;
+}
+
+/** Price readout that flashes green/red as the live feed moves. */
+function LivePrice({ value, decimals }: { value: number; decimals: number }) {
+  const flash = useFlash(value);
+  return (
+    <p className={`font-display text-lg font-bold tabular-nums text-white ${flash}`}>
+      {fmtUsd(value, decimals)}
+    </p>
+  );
 }
 
 const STATS = [
@@ -185,9 +196,7 @@ export default function Hero({ prices }: HeroProps) {
                         <p className="text-[11px] text-slate-500">{r.unit}</p>
                       </div>
                     </div>
-                    <p className="font-display text-lg font-bold tabular-nums text-white">
-                      {fmtUsd(prices[r.id], r.decimals)}
-                    </p>
+                    <LivePrice value={prices[r.id]} decimals={r.decimals} />
                   </div>
                 ))}
               </div>

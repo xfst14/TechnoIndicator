@@ -24,11 +24,14 @@ import {
   Image as ImageIcon,
   Info,
   Loader2,
+  Pause,
+  Play,
   RefreshCw,
   Waves,
   Zap,
 } from "lucide-react";
 import Reveal from "./Reveal";
+import { useFlash } from "../hooks/useFlash";
 import {
   buildCSV,
   COMMODITIES,
@@ -172,7 +175,7 @@ function buildConfig(
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: { duration: 650, easing: "easeOutQuart" },
+      animation: { duration: 420, easing: "easeOutQuart" },
       interaction: { mode: "index", intersect: false },
       plugins: {
         legend: {
@@ -241,6 +244,8 @@ function CommodityCard({ commodity, today, horizonBand, live, fetching, onFetchW
   const deltaPct = (delta / todayBand.avg) * 100;
   const up = delta >= 0;
   const isWater = commodity.id === "water";
+  const flashCls = useFlash(band.avg);
+  const spotFlash = useFlash(todayBand.avg);
 
   return (
     <article className="group relative flex h-full flex-col rounded-2xl border border-line bg-panel p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
@@ -274,11 +279,17 @@ function CommodityCard({ commodity, today, horizonBand, live, fetching, onFetchW
         )}
       </div>
 
-      <p className="mt-6 font-display text-[2.6rem] font-bold leading-none tabular-nums text-white">
+      <p
+        className={`mt-6 font-display text-[2.6rem] font-bold leading-none tabular-nums text-white ${flashCls}`}
+      >
         {fmtUsd(band.avg, commodity.decimals)}
       </p>
-      <p className="mt-2 text-xs text-slate-500">
-        Average forecast · {horizonBand.year}
+      <p className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+        <span>Average forecast · {horizonBand.year}</span>
+        <span className="text-slate-600">·</span>
+        <span className={`tabular-nums ${spotFlash}`}>
+          spot {fmtUsd(todayBand.avg, commodity.decimals)}
+        </span>
       </p>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
@@ -352,6 +363,9 @@ interface ForecastToolProps {
   onFetchWater: () => void;
   waterFetching: boolean;
   waterLive: LiveWaterQuote | null;
+  isLive: boolean;
+  streaming: boolean;
+  onToggleLive: () => void;
 }
 
 export default function ForecastTool({
@@ -364,6 +378,9 @@ export default function ForecastTool({
   onFetchWater,
   waterFetching,
   waterLive,
+  isLive,
+  streaming,
+  onToggleLive,
 }: ForecastToolProps) {
   const [chartType, setChartType] = useState<ChartKind>("line");
   const [showBands, setShowBands] = useState(true);
@@ -410,11 +427,14 @@ export default function ForecastTool({
     chart.update();
   }, [points, chartType, showBands]);
 
-  /* screen-reader announcements */
+  /* Screen-reader announcements.
+     Deliberately keyed to the horizon (and not to every live tick) so the
+     streaming feed does not spam assistive technology every few seconds. */
   useEffect(() => {
-    setAnnounce(`Forecast updated for a ${horizon}-year horizon at ${fmtTime(new Date())}.`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [points]);
+    setAnnounce(
+      `Forecast updated for a ${horizon}-year horizon, ${START_YEAR} to ${START_YEAR + horizon}.`,
+    );
+  }, [horizon]);
 
   /* export actions from the navbar */
   useEffect(() => {
@@ -502,14 +522,47 @@ export default function ForecastTool({
             </h2>
             {/* live bar */}
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="flex items-center gap-2 rounded-full border border-line bg-white/[0.03] px-3.5 py-2 text-xs text-slate-300">
+              <span
+                className={`flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs transition-colors duration-300 ${
+                  streaming
+                    ? "border-teal-400/30 bg-teal-400/[0.07] text-slate-300"
+                    : "border-line bg-white/[0.03] text-slate-400"
+                }`}
+                aria-live="off"
+              >
                 <span className="relative flex h-2 w-2">
-                  <span className="ping-ring absolute inline-flex h-full w-full rounded-full bg-teal-400" aria-hidden="true" />
-                  <span className="pulse-dot relative inline-flex h-2 w-2 rounded-full bg-teal-300" aria-hidden="true" />
+                  {streaming && (
+                    <span className="ping-ring absolute inline-flex h-full w-full rounded-full bg-teal-400" aria-hidden="true" />
+                  )}
+                  <span
+                    className={`relative inline-flex h-2 w-2 rounded-full ${
+                      streaming ? "pulse-dot bg-teal-300" : "bg-slate-500"
+                    }`}
+                    aria-hidden="true"
+                  />
                 </span>
-                <span className="font-semibold text-slate-200">Live</span>
+                <span className={`font-semibold ${streaming ? "text-teal-200" : "text-slate-300"}`}>
+                  {streaming ? "Live" : "Paused"}
+                </span>
                 <span className="tabular-nums text-slate-500">{fmtTime(now)}</span>
+                <span className="hidden text-slate-600 sm:inline">
+                  · upd {fmtTime(lastUpdated)}
+                </span>
               </span>
+              <button
+                type="button"
+                onClick={onToggleLive}
+                aria-pressed={isLive}
+                className="flex items-center gap-2 rounded-full border border-line bg-white/[0.03] px-4 py-2 text-xs font-semibold text-slate-200 transition-all duration-200 hover:border-teal-400/40 hover:text-teal-200"
+                aria-label={isLive ? "Pause the live market feed" : "Resume the live market feed"}
+              >
+                {isLive ? (
+                  <Pause className="h-3.5 w-3.5 text-teal-300" aria-hidden="true" />
+                ) : (
+                  <Play className="h-3.5 w-3.5 text-teal-300" aria-hidden="true" />
+                )}
+                {isLive ? "Pause feed" : "Resume feed"}
+              </button>
               <button
                 type="button"
                 onClick={handleRefresh}
@@ -874,9 +927,12 @@ export default function ForecastTool({
                     </table>
                   </div>
                   <p className="mt-4 text-[11px] leading-relaxed text-slate-600">
-                    The Refresh action perturbs base prices within realistic intraday ranges (oil ±3%,
-                    power ±2.5%, water ±4%). The live water quote is simulated client-side within the
-                    plausible global band of roughly $2.00–$3.40/m³.
+                    The live feed streams automatically every 2.5s using a mean-reverting random walk,
+                    so spot prices, cards, chart and table update on their own — no clicking required.
+                    It auto-pauses when the browser tab is hidden and can be paused manually. The
+                    Refresh action applies a larger one-off shock within realistic intraday ranges
+                    (oil ±3%, power ±2.5%, water ±4%), and the live water quote is re-polled every 30s
+                    within the plausible global band of roughly $2.00–$3.40/m³.
                   </p>
                 </div>
               </div>
