@@ -31,7 +31,7 @@ import {
   Zap,
 } from "lucide-react";
 import Reveal from "./Reveal";
-import { useFlash } from "../hooks/useFlash";
+import { useFlash } from "../hook/useFlash";
 import {
   buildCSV,
   COMMODITIES,
