@@ -1,7 +1,7 @@
 import { ArrowRight, CalendarDays, ChevronDown, Droplets, Fuel, Radio, Zap } from "lucide-react";
 import Reveal from "./Reveal";
 import Ticker from "./Ticker";
-import { useFlash } from "../hooks/useFlash";
+import { useFlash } from "../hook/useFlash";
 import { fmtFullDate, fmtUsd, type CommodityId } from "../lib/model";
 
 /* Deterministic decorative sparkline path */
