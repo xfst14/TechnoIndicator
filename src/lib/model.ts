@@ -330,6 +330,41 @@ export function perturbPrices(current: Record<CommodityId, number>): Record<Comm
   };
 }
 
+/** Live-feed cadence, in milliseconds. */
+export const TICK_MS = 2500;
+/** How often the live water quote is automatically re-polled. */
+export const WATER_POLL_MS = 30000;
+
+/** Trading bands + per-tick step size for the streaming market simulation. */
+const TICK_CONFIG: Record<
+  CommodityId,
+  { step: number; lo: number; hi: number; anchor: number; decimals: number }
+> = {
+  oil: { step: 0.0035, lo: 96, hi: 118, anchor: 104.86, decimals: 2 },
+  electricity: { step: 0.0028, lo: 158, hi: 178, anchor: 166, decimals: 1 },
+  water: { step: 0.0042, lo: 2.15, hi: 3.1, anchor: 2.5, decimals: 2 },
+};
+
+/**
+ * Advances the market by one tick using a mean-reverting random walk
+ * (Ornstein–Uhlenbeck style). Each step is small so the numbers visibly
+ * "breathe" like a live feed instead of jumping, while the pull toward the
+ * anchor keeps prices inside a realistic long-run band.
+ */
+export function tickPrices(
+  current: Record<CommodityId, number>,
+): Record<CommodityId, number> {
+  const next = {} as Record<CommodityId, number>;
+  for (const c of COMMODITIES) {
+    const cfg = TICK_CONFIG[c.id];
+    const price = current[c.id];
+    const shock = (Math.random() - 0.5) * 2 * cfg.step;
+    const reversion = ((cfg.anchor - price) / cfg.anchor) * 0.08;
+    next[c.id] = round(clamp(price * (1 + shock + reversion), cfg.lo, cfg.hi), cfg.decimals);
+  }
+  return next;
+}
+
 export interface LiveWaterQuote {
   price: number;
   asOf: string;
