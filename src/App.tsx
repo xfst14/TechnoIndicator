@@ -1,15 +1,19 @@
 import { useCallback, useMemo, useState } from "react";
+
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import ForecastTool from "./components/ForecastTool";
 import FactorsSection from "./components/FactorsSection";
 import AboutSection from "./components/AboutSection";
 import Footer from "./components/Footer";
-import { useLiveMarket } from "./hooks/useLiveMarket";
+
+// ✅ Fixed import path (singular "hook")
+import { useLiveMarket } from "./hook/useLiveMarket";
 import { generateForecast } from "./lib/model";
 
 export default function App() {
   const [horizon, setHorizon] = useState(7);
+
   const {
     prices,
     jitter,
