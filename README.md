@@ -1,6 +1,6 @@
 # TecnoIndicator
 
-**Real-time 10-year forecasts for global oil & electricity prices.**
+**Real-time 10-year forecasts for global oil, water & electricity prices.**
 
 <img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/2a4fb37c-0cb4-448a-b1f7-d4c19c833f0b" />
 
@@ -15,7 +15,7 @@ A modern, clean, professional single-page web application that delivers illustra
 - **Hero Dashboard** — Clean landing with project name, tagline, current date, and prominent “Start Forecast” CTA.
 - **Interactive Prediction Tool**
   - Horizon slider (1–10 years)
-  - Two commodity cards: **Brent Crude Oil (USD/barrel)** and **Global Electricity (USD/MWh)**
+  - Two commodity cards: **Brent Crude Oil (USD/barrel)**, **Global Water (USD/M^3)** and **Global Electricity (USD/MWh)**
   - Three scenarios per commodity: Average, Optimistic (Min), Pessimistic (Max)
   - Clean data table + interactive line chart (Chart.js)
 - **Real-time Feel** — Live-updating timestamp + “Refresh Data” button that perturbs values within realistic ranges.
