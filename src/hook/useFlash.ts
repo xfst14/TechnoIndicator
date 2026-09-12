@@ -1,26 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Returns a CSS class that briefly flashes red/green whenever `value`
- * changes, so live-feed updates are visually obvious.
+ * Returns a CSS class that briefly "flashes" whenever `value` changes.
+ * - value goes up   -> "flash-up"
+ * - value goes down -> "flash-down"
+ * The class auto-clears after `duration` ms so it can re-trigger next change.
  */
-export function useFlash(value: number, duration = 750): string {
+export function useFlash(value: number, duration = 700): string {
   const prev = useRef(value);
   const [cls, setCls] = useState("");
 
   useEffect(() => {
-    if (value === prev.current) return;
-    const next = value > prev.current ? "flash-up" : "flash-down";
+    // No change (or NaN) -> do nothing
+    if (value === prev.current || Number.isNaN(value)) return;
+
+    const up = value > prev.current;
     prev.current = value;
-    // Restart the animation even if the direction repeats.
-    setCls("");
-    const raf = requestAnimationFrame(() => setCls(next));
+    setCls(up ? "flash-up" : "flash-down");
+
     const id = window.setTimeout(() => setCls(""), duration);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(id);
-    };
+    return () => window.clearTimeout(id);
   }, [value, duration]);
 
   return cls;
 }
+
+// Optional: also provide a default export so BOTH import styles work.
+export default useFlash;
